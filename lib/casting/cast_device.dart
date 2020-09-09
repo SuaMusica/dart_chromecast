@@ -1,10 +1,12 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'dart:convert' show utf8;
+import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:observable/observable.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/io_client.dart';
 import 'package:logging/logging.dart';
+import 'package:observable/observable.dart';
 
 enum CastDeviceType {
   Unknown,
@@ -23,10 +25,8 @@ enum GoogleCastModelType {
   CastGroup,
 }
 
-
 class CastDevice extends ChangeNotifier {
-
-  final Logger log = new Logger('CastDevice');
+  final Logger log = Logger('CastDevice');
 
   final String name;
   final String type;
@@ -67,21 +67,31 @@ class CastDevice extends ChangeNotifier {
         if (null != attr['md']) {
           _modelName = utf8.decode(attr['md']);
         }
-      }
-      else {
+      } else {
         // Attributes are not guaranteed to be set, if not set fetch them via the eureka_info url
         // Possible parameters: version,audio,name,build_info,detail,device_info,net,wifi,setup,settings,opt_in,opencast,multizone,proxy,night_mode_params,user_eq,room_equalizer
         try {
-          http.Response response = await http.get(
-              'http://${host}:8008/setup/eureka_info?params=name,device_info');
+          bool trustSelfSigned = true;
+          HttpClient httpClient = HttpClient()
+            ..badCertificateCallback =
+                ((X509Certificate cert, String host, int port) =>
+                    trustSelfSigned);
+          IOClient ioClient = new IOClient(httpClient);
+          http.Response response = await ioClient.get(
+              'https://${host}:8443/setup/eureka_info?params=name,device_info');
           Map deviceInfo = jsonDecode(response.body);
-          _friendlyName = deviceInfo['name'];
-          if (null != deviceInfo['model_name']) {
+
+          if (deviceInfo['name'] != null && deviceInfo['name'] != 'Unknown') {
+            _friendlyName = deviceInfo['name'];
+          } else if (deviceInfo['ssid'] != null) {
+            _friendlyName = deviceInfo['ssid'];
+          }
+
+          if (deviceInfo['model_name'] != null) {
             _modelName = deviceInfo['model_name'];
           }
-        }
-        catch(exception) {
-          _friendlyName = 'Unknown';
+        } catch (exception) {
+          print(exception.toString());
         }
       }
     }
@@ -91,8 +101,7 @@ class CastDevice extends ChangeNotifier {
   CastDeviceType get deviceType {
     if (type.contains('_googlecast._tcp')) {
       return CastDeviceType.ChromeCast;
-    }
-    else if (type.contains('_airplay._tcp')) {
+    } else if (type.contains('_airplay._tcp')) {
       return CastDeviceType.AppleTV;
     }
     return CastDeviceType.Unknown;
@@ -128,5 +137,4 @@ class CastDevice extends ChangeNotifier {
         return GoogleCastModelType.NonGoogle;
     }
   }
-
 }
