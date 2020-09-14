@@ -23,25 +23,23 @@ class CastMedia {
     }
   }
 
-  Map toChromeCastMap() {
-    return {
-      'type': 'LOAD',
-      'autoPlay': autoPlay,
-      'currentTime': position,
-      'activeTracks': [],
-      'media': {
-        'contentId': contentId,
-        'contentType': contentType,
-        'streamType': 'BUFFERED',
-        'metadata': {
-          'type': 0,
-          'metadataType': 3,
-          'albumName': albumName ?? "",
-          'artist': artist ?? "",
-          'title': title,
-          'images': images.map((e) => {'url': e}).toList()
-        },
-      }
-    };
-  }
+  Map toChromeCastMap() => {
+        'type': 'LOAD',
+        'autoplay': autoPlay,
+        'currentTime': position,
+        'activeTracks': [],
+        'media': {
+          'contentId': contentId,
+          'contentType': contentType,
+          'streamType': 'BUFFERED',
+          'metadata': {
+            'type': 0,
+            'metadataType': 3,
+            'albumName': albumName ?? "",
+            'artist': artist ?? "",
+            'title': title,
+            'images': images.map((e) => {'url': e}).toList()
+          },
+        }
+      };
 }

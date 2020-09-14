@@ -1,7 +1,6 @@
 import 'package:dart_chromecast/casting/cast_media_status.dart';
 
 class CastSession {
-
   String sourceId;
   String destinationId;
   CastMediaStatus castMediaStatus;
@@ -9,7 +8,7 @@ class CastSession {
   bool isConnected;
   bool isReadyForMedia = false;
 
-  CastSession({ this.sourceId, this.destinationId, this.isConnected = false });
+  CastSession({this.sourceId, this.destinationId, this.isConnected = false});
 
   // create from chromecast map
   void mergeWithChromeCastSessionMap(Map map) {
@@ -18,13 +17,10 @@ class CastSession {
     destinationId = map['transportId'] ?? map['sessionId'];
   }
 
-  // TODO: from apple tv map
-
   Map<String, String> toMap() {
     return {
       'sourceId': sourceId,
       'destinationId': destinationId,
     };
   }
-
 }

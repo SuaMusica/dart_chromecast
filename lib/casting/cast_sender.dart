@@ -1,7 +1,3 @@
-/**
- * TODO:
- * - volume, treble, bass?
- */
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -41,7 +37,6 @@ class CastSender extends Object {
   CastMedia _currentCastMedia;
 
   CastSender(this.device) {
-    // TODO: _airplay._tcp
     _contentQueue = [];
 
     castSessionController = StreamController.broadcast();
@@ -69,7 +64,6 @@ class CastSender extends Object {
     _heartbeatTick();
 
     // start status tick
-    // TODO: only start receiver status tick when there are subscriptions to it
 //    _receiverStatusTick();
 
     return true;
@@ -386,15 +380,13 @@ class CastSender extends Object {
     _contentQueue = [];
   }
 
-  @override
+  // @override
   logError(String message, [Error error]) {
-    // TODO: implement logError
     return null;
   }
 
-  @override
+  // @override
   logInfo(String message) {
-    // TODO: implement logInfo
     return null;
   }
 }
