@@ -187,10 +187,9 @@ class CastSender extends Object {
   }
 
   void setVolume(double volume) {
-    Map<String, dynamic> map = {
+    _castMediaAction('SET_VOLUME', {
       'volume': {"level": min(volume, 1)}
-    };
-    _castMediaAction('SET_VOLUME', map);
+    });
   }
 
   CastSession get castSession => _castSession;
@@ -380,12 +379,10 @@ class CastSender extends Object {
     _contentQueue = [];
   }
 
-  // @override
   logError(String message, [Error error]) {
     return null;
   }
 
-  // @override
   logInfo(String message) {
     return null;
   }

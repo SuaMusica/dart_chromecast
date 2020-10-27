@@ -40,13 +40,13 @@ abstract class CastChannel {
     Uint32List fullData =
         Uint32List.fromList(headers.toList()..addAll(bytes.toList()));
 
-    // if ('PING' != payload['type']) {
-    //   // print('Send: ${castMessage.toDebugString()}');
-    //   // print('List: ${fullData.toList().toString()}');
+    if ('PING' != payload['type']) {
+      // print('Send: ${castMessage.toDebugString()}');
+      // print('List: ${fullData.toList().toString()}');
 
-    // } else {
-    //   print('PING');
-    // }
+    } else {
+      print('PING');
+    }
 
     _socket.add(fullData);
 
