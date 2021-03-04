@@ -1,15 +1,15 @@
 class CastMedia {
   final String contentId;
-  String title;
+  String? title;
   bool autoPlay = true;
   double position;
   String contentType;
-  String artist;
-  String albumName;
-  List<String> images;
+  String? artist;
+  String? albumName;
+  List<String>? images;
 
   CastMedia({
-    this.contentId,
+    required this.contentId,
     this.title,
     this.artist,
     this.albumName,
@@ -38,7 +38,7 @@ class CastMedia {
             'albumName': albumName ?? "",
             'artist': artist ?? "",
             'title': title,
-            'images': images.map((e) => {'url': e}).toList()
+            'images': images?.map((e) => {'url': e}).toList()
           },
         }
       };

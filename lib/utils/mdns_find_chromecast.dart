@@ -5,7 +5,11 @@ class CastDevice {
   final String ip;
   final int port;
 
-  CastDevice({this.name, this.ip, this.port});
+  CastDevice({
+    required this.name,
+    required this.ip,
+    required this.port,
+  });
 
   String toString() => "CastDevice: ${name} -> ${ip}:${port}";
 }

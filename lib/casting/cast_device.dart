@@ -28,7 +28,7 @@ enum GoogleCastModelType {
 class CastDevice extends ChangeNotifier {
   final Logger log = Logger('CastDevice');
 
-  final String name;
+  final String? name;
   final String type;
   final String host;
   final int port;
@@ -45,16 +45,16 @@ class CastDevice extends ChangeNotifier {
   /// * ca - Unknown (e.g. "1234");
   /// * ic - Icon path (e.g. "/setup/icon.png");
   /// * ve - Version (e.g. "04").
-  final Map<String, Uint8List> attr;
+  final Map<String, Uint8List>? attr;
 
-  String _friendlyName;
-  String _modelName;
+  String? _friendlyName;
+  String? _modelName;
 
   CastDevice({
     this.name,
-    this.type,
-    this.host,
-    this.port,
+    required this.type,
+    required this.host,
+    required this.port,
     this.attr,
   }) {
     initDeviceInfo();
@@ -62,10 +62,10 @@ class CastDevice extends ChangeNotifier {
 
   void initDeviceInfo() async {
     if (CastDeviceType.ChromeCast == deviceType) {
-      if (null != attr && null != attr['fn']) {
-        _friendlyName = utf8.decode(attr['fn']);
-        if (null != attr['md']) {
-          _modelName = utf8.decode(attr['md']);
+      if (null != attr && null != attr?['fn']) {
+        _friendlyName = utf8.decode(attr!['fn']!);
+        if (null != attr?['md']) {
+          _modelName = utf8.decode(attr!['md']!);
         }
       } else {
         // Attributes are not guaranteed to be set, if not set fetch them via the eureka_info url
@@ -77,8 +77,8 @@ class CastDevice extends ChangeNotifier {
                 ((X509Certificate cert, String host, int port) =>
                     trustSelfSigned);
           IOClient ioClient = new IOClient(httpClient);
-          http.Response response = await ioClient.get(
-              'https://${host}:8443/setup/eureka_info?params=name,device_info');
+          http.Response response = await ioClient.get(Uri.parse(
+              'https://${host}:8443/setup/eureka_info?params=name,device_info'));
           Map deviceInfo = jsonDecode(response.body);
 
           if (deviceInfo['name'] != null && deviceInfo['name'] != 'Unknown') {
@@ -107,14 +107,14 @@ class CastDevice extends ChangeNotifier {
     return CastDeviceType.Unknown;
   }
 
-  String get friendlyName {
+  String? get friendlyName {
     if (null != _friendlyName) {
       return _friendlyName;
     }
     return name;
   }
 
-  String get modelName => _modelName;
+  String? get modelName => _modelName;
 
   GoogleCastModelType get googleModelType {
     switch (modelName) {
@@ -122,7 +122,6 @@ class CastDevice extends ChangeNotifier {
         return GoogleCastModelType.GoogleHome;
       case "Google Home Hub":
         return GoogleCastModelType.GoogleHub;
-        break;
       case "Google Home Mini":
         return GoogleCastModelType.GoogleMini;
       case "Google Home Max":

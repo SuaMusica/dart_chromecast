@@ -3,14 +3,14 @@ import 'package:dart_chromecast/casting/cast_media_status.dart';
 class CastSession {
   String sourceId;
   String destinationId;
-  CastMediaStatus castMediaStatus;
+  CastMediaStatus? castMediaStatus;
 
   bool isConnected;
   bool isReadyForMedia = false;
 
   CastSession({
-    this.sourceId,
-    this.destinationId,
+    required this.sourceId,
+    required this.destinationId,
     this.isConnected = false,
   });
 

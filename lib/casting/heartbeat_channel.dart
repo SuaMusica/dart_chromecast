@@ -5,8 +5,8 @@ import 'package:dart_chromecast/casting/cast_channel.dart';
 class HeartbeatChannel extends CastChannel {
   HeartbeatChannel.create(
     Socket socket, {
-    String sourceId,
-    String destinationId,
+    String? sourceId,
+    String? destinationId,
   }) : super.CreateWithSocket(
           socket,
           sourceId: sourceId ?? 'sender-0',
