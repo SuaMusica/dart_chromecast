@@ -11,10 +11,10 @@ class CastDevice {
     required this.port,
   });
 
-  String toString() => "CastDevice: ${name} -> ${ip}:${port}";
+  String toString() => "CastDevice: $name -> $ip:$port";
 }
 
-Future<List<CastDevice>> find_chromecasts() async {
+Future<List<CastDevice>> findChromecasts() async {
   const String name = '_googlecast._tcp.local';
   final MDnsClient client = MDnsClient();
 

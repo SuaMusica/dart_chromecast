@@ -7,7 +7,7 @@ class ReceiverChannel extends CastChannel {
     Socket socket, {
     String? sourceId,
     String? destinationId,
-  }) : super.CreateWithSocket(
+  }) : super.createWithSocket(
           socket,
           sourceId: sourceId ?? 'sender-0',
           destinationId: destinationId ?? 'receiver-0',

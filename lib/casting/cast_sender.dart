@@ -80,7 +80,7 @@ class CastSender extends Object {
       return false;
     }
 
-    _mediaChannel = MediaChannel.Create(
+    _mediaChannel = MediaChannel.create(
       socket: _socket!,
       sourceId: sourceId,
       destinationId: destinationId,
@@ -266,7 +266,7 @@ class CastSender extends Object {
             sourceId: _castSession!.sourceId,
             destinationId: _castSession!.destinationId);
         _connectionChannel?.sendMessage({'type': 'CONNECT'});
-        _mediaChannel = MediaChannel.Create(
+        _mediaChannel = MediaChannel.create(
             socket: _socket!,
             sourceId: _castSession!.sourceId,
             destinationId: _castSession!.destinationId);

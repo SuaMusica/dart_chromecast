@@ -2,11 +2,11 @@ import 'dart:convert';
 import 'dart:convert' show utf8;
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:flutter/material.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:http/io_client.dart';
 import 'package:logging/logging.dart';
-import 'package:observable/observable.dart';
 
 enum CastDeviceType {
   Unknown,
@@ -78,7 +78,7 @@ class CastDevice extends ChangeNotifier {
                     trustSelfSigned);
           IOClient ioClient = new IOClient(httpClient);
           http.Response response = await ioClient.get(Uri.parse(
-              'https://${host}:8443/setup/eureka_info?params=name,device_info'));
+              'https://$host:8443/setup/eureka_info?params=name,device_info'));
           Map deviceInfo = jsonDecode(response.body);
 
           if (deviceInfo['name'] != null && deviceInfo['name'] != 'Unknown') {
@@ -95,7 +95,7 @@ class CastDevice extends ChangeNotifier {
         }
       }
     }
-    notifyChange();
+    notifyListeners();
   }
 
   CastDeviceType get deviceType {

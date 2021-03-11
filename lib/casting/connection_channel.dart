@@ -7,7 +7,7 @@ class ConnectionChannel extends CastChannel {
     Socket socket, {
     String? sourceId,
     String? destinationId,
-  }) : super.CreateWithSocket(socket,
+  }) : super.createWithSocket(socket,
             sourceId: sourceId ?? 'sender-0',
             destinationId: destinationId ?? 'receiver-0',
             namespace: 'urn:x-cast:com.google.cast.tp.connection');

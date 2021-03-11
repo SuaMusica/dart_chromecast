@@ -16,7 +16,7 @@ abstract class CastChannel {
   CastChannel(
       this._socket, this._sourceId, this._destinationId, this._namespace);
 
-  CastChannel.CreateWithSocket(Socket socket,
+  CastChannel.createWithSocket(Socket socket,
       {String? sourceId, String? destinationId, String? namespace})
       : _socket = socket,
         _sourceId = sourceId ?? "",
