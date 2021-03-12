@@ -2,11 +2,11 @@ import 'dart:convert';
 import 'dart:convert' show utf8;
 import 'dart:io';
 import 'dart:typed_data';
-import 'package:flutter/material.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:http/io_client.dart';
 import 'package:logging/logging.dart';
+import 'package:observable/observable.dart';
 
 enum CastDeviceType {
   Unknown,
@@ -95,7 +95,7 @@ class CastDevice extends ChangeNotifier {
         }
       }
     }
-    notifyListeners();
+    notifyChange();
   }
 
   CastDeviceType get deviceType {
