@@ -36,7 +36,7 @@ abstract class CastChannel {
 
     Uint8List bytes = castMessage.writeToBuffer();
     Uint32List headers =
-        Uint32List.fromList(writeUInt32BE([4], bytes.lengthInBytes));
+        Uint32List.fromList(writeUInt32BE([0, 0, 0, 0], bytes.lengthInBytes));
     Uint32List fullData =
         Uint32List.fromList(headers.toList()..addAll(bytes.toList()));
 
