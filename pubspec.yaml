@@ -10,8 +10,8 @@ dependencies:
   args: ^2.0.0
   cli_util: ^0.3.0
   http: ^0.13.0
-  logging: ^1.0.0
-  multicast_dns: ^0.2.2
+  logging: ^1.0.1
+  multicast_dns: ^0.3.0
   observable:
     git:
       url: https://github.com/google/observable
