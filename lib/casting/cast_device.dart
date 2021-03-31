@@ -6,7 +6,7 @@ import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:http/io_client.dart';
 import 'package:logging/logging.dart';
-import 'package:observable/observable.dart';
+// import 'package:observable/observable.dart';
 
 enum CastDeviceType {
   Unknown,
@@ -25,7 +25,7 @@ enum GoogleCastModelType {
   CastGroup,
 }
 
-class CastDevice extends ChangeNotifier {
+class CastDevice {
   final Logger log = Logger('CastDevice');
 
   final String? name;
@@ -95,7 +95,7 @@ class CastDevice extends ChangeNotifier {
         }
       }
     }
-    notifyChange();
+    // notifyChange();
   }
 
   CastDeviceType get deviceType {
