@@ -1,7 +1,3 @@
-/**
- * TODO:
- * - volume, treble, bass?
- */
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -22,26 +18,25 @@ class CastSender extends Object {
   final Logger log = new Logger('CastSender');
   final CastDevice device;
 
-  SecureSocket _socket;
+  SecureSocket? _socket;
 
-  ConnectionChannel _connectionChannel;
-  HeartbeatChannel _heartbeatChannel;
-  ReceiverChannel _receiverChannel;
-  MediaChannel _mediaChannel;
+  ConnectionChannel? _connectionChannel;
+  HeartbeatChannel? _heartbeatChannel;
+  ReceiverChannel? _receiverChannel;
+  MediaChannel? _mediaChannel;
 
-  bool connectionDidClose;
+  bool? connectionDidClose;
 
 //  Timer _heartbeatTimer;
-  Timer _mediaCurrentTimeTimer;
+  Timer? _mediaCurrentTimeTimer;
 
-  CastSession _castSession;
-  StreamController<CastSession> castSessionController;
-  StreamController<CastMediaStatus> castMediaStatusController;
-  List<CastMedia> _contentQueue;
-  CastMedia _currentCastMedia;
+  CastSession? _castSession;
+  late StreamController<CastSession> castSessionController;
+  late StreamController<CastMediaStatus> castMediaStatusController;
+  List<CastMedia>? _contentQueue;
+  CastMedia? _currentCastMedia;
 
   CastSender(this.device) {
-    // TODO: _airplay._tcp
     _contentQueue = [];
 
     castSessionController = StreamController.broadcast();
@@ -63,19 +58,21 @@ class CastSender extends Object {
       return false;
     }
 
-    _connectionChannel.sendMessage({'type': 'CONNECT'});
+    _connectionChannel?.sendMessage({'type': 'CONNECT'});
 
     // start heartbeat
     _heartbeatTick();
 
     // start status tick
-    // TODO: only start receiver status tick when there are subscriptions to it
 //    _receiverStatusTick();
 
     return true;
   }
 
-  Future<bool> reconnect({String sourceId, String destinationId}) async {
+  Future<bool> reconnect({
+    required String sourceId,
+    required String destinationId,
+  }) async {
     _castSession =
         CastSession(sourceId: sourceId, destinationId: destinationId);
     bool connected = await connect();
@@ -83,16 +80,19 @@ class CastSender extends Object {
       return false;
     }
 
-    _mediaChannel = MediaChannel.Create(
-        socket: _socket, sourceId: sourceId, destinationId: destinationId);
-    _mediaChannel.sendMessage({'type': 'GET_STATUS'});
+    _mediaChannel = MediaChannel.create(
+      socket: _socket!,
+      sourceId: sourceId,
+      destinationId: destinationId,
+    );
+    _mediaChannel?.sendMessage({'type': 'GET_STATUS'});
 
     // now wait for the media to actually get a status?
     bool didReconnect = await _waitForMediaStatus();
     if (didReconnect) {
       log.fine('reconnecting successful!');
       try {
-        castSessionController.add(_castSession);
+        castSessionController.add(_castSession!);
       } catch (e) {
         log.severe(
             "Could not add the CastSession to the CastSession Stream Controller: events will not be triggered");
@@ -101,7 +101,7 @@ class CastSender extends Object {
       }
 
       try {
-        castMediaStatusController.add(_castSession.castMediaStatus);
+        castMediaStatusController.add(_castSession!.castMediaStatus!);
       } catch (e) {
         log.severe(
             "Could not add the CastMediaStatus to the CastSession Stream Controller: events will not be triggered");
@@ -114,22 +114,22 @@ class CastSender extends Object {
 
   Future<bool> disconnect() async {
     if (null != _connectionChannel && null != _castSession?.castMediaStatus) {
-      _connectionChannel.sendMessage({
+      _connectionChannel?.sendMessage({
         'type': 'CLOSE',
-        'sessionId': _castSession.castMediaStatus.sessionId,
+        'sessionId': _castSession!.castMediaStatus?.sessionId,
       });
     }
     if (null != _socket) {
-      await _socket.destroy();
+      _socket!.destroy();
     }
     _dispose();
     connectionDidClose = true;
     return true;
   }
 
-  void launch([String appId]) {
+  void launch([String? appId]) {
     if (null != _receiverChannel) {
-      _receiverChannel.sendMessage({
+      _receiverChannel!.sendMessage({
         'type': 'LAUNCH',
         'appId': appId ?? 'CC1AD845',
       });
@@ -145,7 +145,7 @@ class CastSender extends Object {
     if (!append) {
       _contentQueue = media;
     } else {
-      _contentQueue.addAll(media);
+      _contentQueue?.addAll(media);
     }
     if (null != _mediaChannel) {
       _handleContentQueue(forceNext: forceNext || !append);
@@ -155,9 +155,9 @@ class CastSender extends Object {
   void _castMediaAction(type, [params]) {
     if (null == params) params = {};
     if (null != _mediaChannel && null != _castSession?.castMediaStatus) {
-      _mediaChannel.sendMessage(params
+      _mediaChannel?.sendMessage(params
         ..addAll({
-          'mediaSessionId': _castSession.castMediaStatus.sessionId,
+          'mediaSessionId': _castSession!.castMediaStatus?.sessionId,
           'type': type,
         }));
     }
@@ -193,15 +193,16 @@ class CastSender extends Object {
   }
 
   void setVolume(double volume) {
-    Map<String, dynamic> map = {'volume': min(volume, 1)};
-    _castMediaAction('VOLUME', map);
+    _castMediaAction('SET_VOLUME', {
+      'volume': {"level": min(volume, 1)}
+    });
   }
 
-  CastSession get castSession => _castSession;
+  CastSession? get castSession => _castSession;
 
   // private
 
-  Future<SecureSocket> _createSocket() async {
+  Future<SecureSocket?> _createSocket() async {
     if (null == _socket) {
       try {
         log.fine('Connecting to ${device.host}:${device.port}');
@@ -210,17 +211,17 @@ class CastSender extends Object {
             onBadCertificate: (X509Certificate certificate) => true,
             timeout: Duration(seconds: 10));
 
-        _connectionChannel = ConnectionChannel.create(_socket,
-            sourceId: _castSession.sourceId,
-            destinationId: _castSession.destinationId);
-        _heartbeatChannel = HeartbeatChannel.create(_socket,
-            sourceId: _castSession.sourceId,
-            destinationId: _castSession.destinationId);
-        _receiverChannel = ReceiverChannel.create(_socket,
-            sourceId: _castSession.sourceId,
-            destinationId: _castSession.destinationId);
+        _connectionChannel = ConnectionChannel.create(_socket!,
+            sourceId: _castSession!.sourceId,
+            destinationId: _castSession!.destinationId);
+        _heartbeatChannel = HeartbeatChannel.create(_socket!,
+            sourceId: _castSession!.sourceId,
+            destinationId: _castSession!.destinationId);
+        _receiverChannel = ReceiverChannel.create(_socket!,
+            sourceId: _castSession!.sourceId,
+            destinationId: _castSession!.destinationId);
 
-        _socket.listen(_onSocketData, onDone: _dispose);
+        _socket?.listen(_onSocketData, onDone: _dispose);
       } catch (e) {
         log.fine(e.toString());
         return null;
@@ -233,8 +234,10 @@ class CastSender extends Object {
     List<int> slice = event.getRange(4, event.length).toList();
 
     CastMessage message = CastMessage.fromBuffer(slice);
+    // ignore: unnecessary_null_comparison
     if (null != message) {
       // handle the message
+      // ignore: unnecessary_null_comparison
       if (null != message.payloadUtf8) {
         Map<String, dynamic> payloadMap = jsonDecode(message.payloadUtf8);
         log.fine(payloadMap['type']);
@@ -257,20 +260,20 @@ class CastSender extends Object {
         true == payload['status']?.containsKey('applications')) {
       // re-create the channel with the transportId the chromecast just sent us
       if (false == _castSession?.isConnected) {
-        _castSession = _castSession
+        _castSession = _castSession!
           ..mergeWithChromeCastSessionMap(payload['status']['applications'][0]);
-        _connectionChannel = ConnectionChannel.create(_socket,
-            sourceId: _castSession.sourceId,
-            destinationId: _castSession.destinationId);
-        _connectionChannel.sendMessage({'type': 'CONNECT'});
-        _mediaChannel = MediaChannel.Create(
-            socket: _socket,
-            sourceId: _castSession.sourceId,
-            destinationId: _castSession.destinationId);
-        _mediaChannel.sendMessage({'type': 'GET_STATUS'});
+        _connectionChannel = ConnectionChannel.create(_socket!,
+            sourceId: _castSession!.sourceId,
+            destinationId: _castSession!.destinationId);
+        _connectionChannel?.sendMessage({'type': 'CONNECT'});
+        _mediaChannel = MediaChannel.create(
+            socket: _socket!,
+            sourceId: _castSession!.sourceId,
+            destinationId: _castSession!.destinationId);
+        _mediaChannel?.sendMessage({'type': 'GET_STATUS'});
 
         try {
-          castSessionController.add(_castSession);
+          castSessionController.add(_castSession!);
         } catch (e) {
           log.severe(
               "Could not add the CastSession to the CastSession Stream Controller: events will not be triggered");
@@ -281,43 +284,43 @@ class CastSender extends Object {
   }
 
   Future<bool> _waitForMediaStatus() async {
-    while (false == _castSession.isConnected) {
+    while (false == _castSession?.isConnected) {
       await Future.delayed(Duration(milliseconds: 100));
-      if (connectionDidClose) return false;
+      if (connectionDidClose ?? false) return false;
     }
-    return _castSession.isConnected;
+    return _castSession!.isConnected;
   }
 
   void _handleMediaStatus(Map payload) {
     log.fine('Handle media status: ' + payload.toString());
 
     if (null != payload['status']) {
-      if (!_castSession.isConnected) {
-        _castSession.isConnected = true;
+      if (!_castSession!.isConnected) {
+        _castSession!.isConnected = true;
         _handleContentQueue();
       }
 
       if (payload['status'].length > 0) {
-        _castSession.castMediaStatus =
+        _castSession!.castMediaStatus =
             CastMediaStatus.fromChromeCastMediaStatus(payload['status'][0]);
 
-        log.fine('Media status ${_castSession.castMediaStatus.toString()}');
+        log.fine('Media status ${_castSession?.castMediaStatus.toString()}');
 
-        if (_castSession.castMediaStatus.isFinished) {
+        if (_castSession!.castMediaStatus!.isFinished) {
           _handleContentQueue();
         }
 
-        if (_castSession.castMediaStatus.isPlaying) {
+        if (_castSession!.castMediaStatus!.isPlaying) {
           _mediaCurrentTimeTimer =
               Timer(Duration(seconds: 1), _getMediaCurrentTime);
-        } else if (_castSession.castMediaStatus.isPaused &&
+        } else if (_castSession!.castMediaStatus!.isPaused &&
             null != _mediaCurrentTimeTimer) {
-          _mediaCurrentTimeTimer.cancel();
+          _mediaCurrentTimeTimer?.cancel();
           _mediaCurrentTimeTimer = null;
         }
 
         try {
-          castMediaStatusController.add(_castSession.castMediaStatus);
+          castMediaStatusController.add(_castSession!.castMediaStatus!);
         } catch (e) {
           log.severe(
               "Could not add the CastMediaStatus to the CastSession Stream Controller: events will not be triggered");
@@ -327,7 +330,7 @@ class CastSender extends Object {
       } else {
         log.fine("Media status is empty");
 
-        if (null == _currentCastMedia && _contentQueue.isNotEmpty) {
+        if (null == _currentCastMedia && _contentQueue!.isNotEmpty) {
           log.fine(
               "no media is currently being casted, try to cast first in queue");
           _handleContentQueue();
@@ -337,27 +340,28 @@ class CastSender extends Object {
   }
 
   _handleContentQueue({forceNext = false}) {
-    if (null == _mediaChannel || _contentQueue.isEmpty) {
+    if (null == _mediaChannel || _contentQueue!.isEmpty) {
       return;
     }
-    if (null != _castSession.castMediaStatus &&
-        !_castSession.castMediaStatus.isFinished &&
+    if (null != _castSession?.castMediaStatus &&
+        !_castSession!.castMediaStatus!.isFinished &&
         !forceNext) {
       // don't handle the next in the content queue, because we only want
       // to play the 'next' content if it's not already playing.
       return;
     }
-    _currentCastMedia = _contentQueue.elementAt(0);
+    _currentCastMedia = _contentQueue!.elementAt(0);
     if (null != _currentCastMedia) {
-      _contentQueue = _contentQueue.getRange(1, _contentQueue.length).toList();
-      _mediaChannel.sendMessage(_currentCastMedia.toChromeCastMap());
+      _contentQueue =
+          _contentQueue?.getRange(1, _contentQueue!.length).toList();
+      _mediaChannel?.sendMessage(_currentCastMedia!.toChromeCastMap());
     }
   }
 
   void _getMediaCurrentTime() {
     if (null != _mediaChannel &&
-        true == _castSession?.castMediaStatus?.isPlaying) {
-      _mediaChannel.sendMessage({
+        true == _castSession?.castMediaStatus!.isPlaying) {
+      _mediaChannel?.sendMessage({
         'type': 'GET_STATUS',
       });
     }
@@ -365,7 +369,7 @@ class CastSender extends Object {
 
   void _heartbeatTick() {
     if (null != _heartbeatChannel) {
-      _heartbeatChannel.sendMessage({'type': 'PING'});
+      _heartbeatChannel!.sendMessage({'type': 'PING'});
 
 //      _heartbeatTimer = Timer(Duration(seconds: 5), _heartbeatTick);
       Timer(Duration(seconds: 5), _heartbeatTick);
@@ -384,15 +388,11 @@ class CastSender extends Object {
     _contentQueue = [];
   }
 
-  @override
-  logError(String message, [Error error]) {
-    // TODO: implement logError
+  logError(String message, [Error? error]) {
     return null;
   }
 
-  @override
   logInfo(String message) {
-    // TODO: implement logInfo
     return null;
   }
 }
