@@ -13,5 +13,8 @@ dependencies:
   logging: ^1.0.1
   multicast_dns: ^0.3.0
   protobuf: ^2.0.0
-  protoc_plugin: ^20.0.0
+  protoc_plugin:
+    git:
+      url: https://github.com/google/protobuf.dart
+      path: protoc_plugin
   xml: ^5.0.2
