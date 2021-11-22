@@ -40,7 +40,7 @@ void main(List<String> arguments) async {
     print('Looking for ChromeCast devices...');
 
     List<find_chromecast.CastDevice> devices =
-        await find_chromecast.find_chromecasts();
+        await find_chromecast.findChromecasts();
     if (devices.length == 0) {
       print('No devices found!');
       return;
@@ -50,15 +50,15 @@ void main(List<String> arguments) async {
     for (int i = 0; i < devices.length; i++) {
       int index = i + 1;
       find_chromecast.CastDevice device = devices[i];
-      print("${index}: ${device.name}");
+      print("$index: ${device.name}");
     }
 
     print("Pick a device (1-${devices.length}):");
 
-    int choice = null;
+    int? choice;
 
     while (choice == null || choice < 0 || choice > devices.length) {
-      choice = int.parse(stdin.readLineSync());
+      choice = int.tryParse(stdin.readLineSync()!);
       if (choice == null) {
         print(
             "Please pick a number (1-${devices.length}) or press return to search again");
@@ -70,9 +70,9 @@ void main(List<String> arguments) async {
     host = pickedDevice.ip;
     port = pickedDevice.port;
 
-    print("Connecting to device: ${host}:${port}");
+    print("Connecting to device: $host:$port");
 
-    log.fine("Picked: ${pickedDevice}");
+    log.fine("Picked: $pickedDevice");
   }
 
   startCasting(media, host, port, argResults['append']);
@@ -83,12 +83,10 @@ void startCasting(
   log.fine('Start Casting');
 
   // try to load previous state saved as json in saved_cast_state.json
-  Map savedState;
+  Map? savedState;
   try {
-    File savedStateFile = await File("./saved_cast_state.json");
-    if (null != savedStateFile) {
-      savedState = jsonDecode(await savedStateFile.readAsString());
-    }
+    File savedStateFile = File("./saved_cast_state.json");
+    savedState = jsonDecode(await savedStateFile.readAsString());
   } catch (e) {
     // does not exist yet
     log.warning('error fetching saved state' + e.toString());
@@ -115,7 +113,7 @@ void startCasting(
   castSender.castSessionController.stream
       .listen((CastSession castSession) async {
     if (castSession.isConnected) {
-      File savedStateFile = await File('./saved_cast_state.json');
+      File savedStateFile = File('./saved_cast_state.json');
       Map map = {
         'time': DateTime.now().millisecondsSinceEpoch,
       }..addAll(castSession.toMap());
@@ -124,20 +122,20 @@ void startCasting(
     }
   });
 
-  CastMediaStatus prevMediaStatus;
+  CastMediaStatus? prevMediaStatus;
   // Listen for media status updates, such as pausing, playing, seeking, playback etc.
   castSender.castMediaStatusController.stream
       .listen((CastMediaStatus mediaStatus) {
     // show progress for example
     if (null != prevMediaStatus &&
-        mediaStatus.volume != prevMediaStatus.volume) {
+        mediaStatus.volume != prevMediaStatus?.volume) {
       // volume just updated
       log.info('Volume just updated to ${mediaStatus.volume}');
     }
     if (null == prevMediaStatus ||
-        mediaStatus?.position != prevMediaStatus?.position) {
+        mediaStatus.position != prevMediaStatus?.position) {
       // update the current progress
-      log.info('Media Position is ${mediaStatus?.position}');
+      log.info('Media Position is ${mediaStatus.position}');
     }
     prevMediaStatus = mediaStatus;
   });
@@ -192,7 +190,7 @@ void startCasting(
 //  stdin.asBroadcastStream().listen(_handleUserInput);
 }
 
-void _handleUserInput(CastSender castSender, List<int> data) {
+void _handleUserInput(CastSender? castSender, List<int> data) {
   if (null == castSender || data.length == 0) return;
 
   int keyCode = data.last;
@@ -210,9 +208,9 @@ void _handleUserInput(CastSender castSender, List<int> data) {
     // left or right = seek 10s back or forth
     double seekBy = 67 == keyCode ? 10.0 : -10.0;
     if (null != castSender.castSession &&
-        null != castSender.castSession.castMediaStatus) {
+        null != castSender.castSession?.castMediaStatus) {
       castSender.seek(
-        max(0.0, castSender.castSession.castMediaStatus.position + seekBy),
+        max(0.0, castSender.castSession!.castMediaStatus!.position + seekBy),
       );
     }
   }

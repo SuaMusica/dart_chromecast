@@ -16,12 +16,12 @@ abstract class CastChannel {
   CastChannel(
       this._socket, this._sourceId, this._destinationId, this._namespace);
 
-  CastChannel.CreateWithSocket(Socket socket,
-      {String sourceId, String destinationId, String namespace})
+  CastChannel.createWithSocket(Socket socket,
+      {String? sourceId, String? destinationId, String? namespace})
       : _socket = socket,
-        _sourceId = sourceId,
-        _destinationId = destinationId,
-        _namespace = namespace;
+        _sourceId = sourceId ?? "",
+        _destinationId = destinationId ?? "",
+        _namespace = namespace ?? "";
 
   void sendMessage(Map payload) async {
     payload['requestId'] = _requestId;
@@ -36,17 +36,17 @@ abstract class CastChannel {
 
     Uint8List bytes = castMessage.writeToBuffer();
     Uint32List headers =
-        Uint32List.fromList(writeUInt32BE(List<int>(4), bytes.lengthInBytes));
+        Uint32List.fromList(writeUInt32BE([0, 0, 0, 0], bytes.lengthInBytes));
     Uint32List fullData =
         Uint32List.fromList(headers.toList()..addAll(bytes.toList()));
 
-    if ('PING' != payload['type']) {
-      // print('Send: ${castMessage.toDebugString()}');
-      // print('List: ${fullData.toList().toString()}');
+    // if ('PING' != payload['type']) {
+    //   // print('Send: ${castMessage.toDebugString()}');
+    //   // print('List: ${fullData.toList().toString()}');
 
-    } else {
-      print('PING');
-    }
+    // } else {
+    //   print('PING');
+    // }
 
     _socket.add(fullData);
 

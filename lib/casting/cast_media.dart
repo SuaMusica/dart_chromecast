@@ -1,15 +1,18 @@
 class CastMedia {
-
   final String contentId;
-  String title;
+  String? title;
   bool autoPlay = true;
   double position;
   String contentType;
-  List<String> images;
+  String? artist;
+  String? albumName;
+  List<String>? images;
 
   CastMedia({
-    this.contentId,
+    required this.contentId,
     this.title,
+    this.artist,
+    this.albumName,
     this.autoPlay = true,
     this.position = 0.0,
     this.contentType = 'video/mp4',
@@ -20,20 +23,23 @@ class CastMedia {
     }
   }
 
-  Map toChromeCastMap() {
-    return {
-      'type': 'LOAD',
-      'autoPlay': autoPlay,
-      'currentTime': position,
-      'activeTracks': [],
-      'media': {
-        'contentId': contentId,
-        'contentType': contentType,
-        'images': images,
-        'title': title,
-        'streamType': 'BUFFERED',
-      }
-    };
-  }
-
+  Map toChromeCastMap() => {
+        'type': 'LOAD',
+        'autoplay': autoPlay,
+        'currentTime': position,
+        'activeTracks': [],
+        'media': {
+          'contentId': contentId,
+          'contentType': contentType,
+          'streamType': 'BUFFERED',
+          'metadata': {
+            'type': 0,
+            'metadataType': 3,
+            'albumName': albumName ?? "",
+            'artist': artist ?? "",
+            'title': title,
+            'images': images?.map((e) => {'url': e}).toList()
+          },
+        }
+      };
 }
