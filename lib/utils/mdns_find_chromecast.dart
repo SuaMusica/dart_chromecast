@@ -33,7 +33,7 @@ Future<List<CastDevice>> findChromecasts() async {
         ResourceRecordQuery.service(ptr.domainName))) {
       await for (IPAddressResourceRecord ip
           in client.lookup<IPAddressResourceRecord>(
-              ResourceRecordQuery.addressIPv4(srv.target))) {
+              ResourceRecordQuery.addressIPv4(srv.target),)) {
         map[srv.name] =
             CastDevice(name: srv.name, ip: ip.address.address, port: srv.port);
       }
