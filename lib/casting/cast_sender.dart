@@ -96,7 +96,7 @@ class CastSender extends Object {
       } catch (e) {
         log.severe(
             "Could not add the CastSession to the CastSession Stream Controller: events will not be triggered");
-        log.severe(e.toString());
+        log.severe(e.toString(),);
         log.info("Closed? ${castSessionController.isClosed}");
       }
 
