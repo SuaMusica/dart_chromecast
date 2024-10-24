@@ -96,7 +96,9 @@ class CastSender extends Object {
       } catch (e) {
         log.severe(
             "Could not add the CastSession to the CastSession Stream Controller: events will not be triggered");
-        log.severe(e.toString(),);
+        log.severe(
+          e.toString(),
+        );
         log.info("Closed? ${castSessionController.isClosed}");
       }
 
@@ -114,12 +116,15 @@ class CastSender extends Object {
 
   Future<bool> disconnect() async {
     if (null != _connectionChannel && null != _castSession?.castMediaStatus) {
+      stop();
       _connectionChannel?.sendMessage({
         'type': 'CLOSE',
         'sessionId': _castSession!.castMediaStatus?.sessionId,
       });
     }
     if (null != _socket) {
+      await _socket!.flush();
+      await _socket!.close();
       _socket!.destroy();
     }
     _dispose();
@@ -152,14 +157,13 @@ class CastSender extends Object {
     }
   }
 
-  void _castMediaAction(type, [params]) {
-    if (null == params) params = {};
+  void _castMediaAction(String type, [Map<String, dynamic>? params]) {
     if (null != _mediaChannel && null != _castSession?.castMediaStatus) {
-      _mediaChannel?.sendMessage(params
-        ..addAll({
-          'mediaSessionId': _castSession!.castMediaStatus?.sessionId,
-          'type': type,
-        }));
+      _mediaChannel?.sendMessage({
+        ...params ?? {},
+        'mediaSessionId': _castSession?.castMediaStatus?.sessionId,
+        'type': type,
+      });
     }
   }
 
@@ -194,7 +198,9 @@ class CastSender extends Object {
 
   void setVolume(double volume) {
     _castMediaAction('SET_VOLUME', {
-      'volume': {"level": min(volume, 1)}
+      'volume': {
+        'level': min(volume, 1),
+      }
     });
   }
 
